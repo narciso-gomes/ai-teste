@@ -12,5 +12,10 @@
       "dest": "/src/main.ts",
       "methods": ["GET", "POST", "PUT", "PATCH", "DELETE"]
     }
-  ]
+  ],
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_GENERATE_PRISMA_CLIENT": "true"
+    }
+  }
 }
