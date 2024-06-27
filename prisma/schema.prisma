@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model categorias {
+  id       Int        @id @default(autoincrement()) @db.UnsignedInt
+  nome     String?    @db.VarChar(155)
+  produtos produtos[]
+}
+
+model compradores {
+  id        Int       @id @default(autoincrement()) @db.UnsignedInt
+  documento String    @db.VarChar(20)
+  nome      String    @db.VarChar(155)
+  telefone  String    @db.VarChar(15)
+  email     String?   @db.VarChar(55)
+  obs       String?   @db.VarChar(155)
+  pedidos   pedidos[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model enderecos {
+  id               Int       @id @default(autoincrement()) @db.UnsignedInt
+  recebedor        String?   @db.VarChar(155)
+  telefone         String?   @db.VarChar(15)
+  cep              String?   @db.VarChar(8)
+  logradouro       String?   @db.VarChar(155)
+  numero           Int?
+  complemento      String?   @db.VarChar(55)
+  bairro           String?   @db.VarChar(55)
+  cidade           String?   @db.VarChar(55)
+  status           Int?
+  ponto_referencia String?   @db.VarChar(155)
+  created_at       DateTime? @db.Timestamp(0)
+  updated_at       DateTime? @db.Timestamp(0)
+}
+
+model pagamentos_formas {
+  id   Int     @id @default(autoincrement()) @db.UnsignedInt
+  nome String? @db.VarChar(25)
+}
+
+model pedidos {
+  id                Int                @id @default(autoincrement()) @db.UnsignedInt
+  vendedor_id       Int?               @db.UnsignedInt
+  comprador_id      Int?               @db.UnsignedInt
+  endereco_id       Int?               @db.UnsignedInt
+  formapagamento_id Int?               @db.UnsignedInt
+  data              DateTime?          @db.Date
+  status_id         Int?
+  valor             Decimal?           @db.Decimal(10, 2)
+  obs               String?            @db.Text
+  uuid              String?            @db.VarChar(25)
+  vendedores        vendedores?        @relation(fields: [vendedor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pedidos_ibfk_1")
+  compradores       compradores?       @relation(fields: [comprador_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pedidos_ibfk_2")
+  pedidos_produtos  pedidos_produtos[]
+
+  @@index([vendedor_id], map: "cliente_id")
+  @@index([comprador_id], map: "comprador_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model pedidos_produtos {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  pedido_id  Int?      @db.UnsignedInt
+  produto_id Int?      @db.UnsignedInt
+  qtd        Int?
+  valor      Decimal?  @db.Decimal(10, 2)
+  status     String?   @db.Char(1)
+  pedidos    pedidos?  @relation(fields: [pedido_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pedidos_produtos_ibfk_1")
+  produtos   produtos? @relation(fields: [produto_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pedidos_produtos_ibfk_2")
+
+  @@index([pedido_id], map: "pedido_id")
+  @@index([produto_id], map: "produto_id")
+}
+
+model pedidos_status {
+  id   Int     @id @default(autoincrement()) @db.UnsignedInt
+  nome String? @db.VarChar(30)
+}
+
+model produtos {
+  id               Int                @id @default(autoincrement()) @db.UnsignedInt
+  vendedor_id      Int?               @db.UnsignedInt
+  categoria_id     Int?               @db.UnsignedInt
+  nome             String?            @db.VarChar(155)
+  tamanho          String?            @db.VarChar(10)
+  cor              String?            @db.VarChar(40)
+  imagem           String?            @db.VarChar(25)
+  descricao        String?            @db.Text
+  pedidos_produtos pedidos_produtos[]
+  vendedores       vendedores?        @relation(fields: [vendedor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "produtos_ibfk_1")
+  categorias       categorias?        @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "produtos_ibfk_2")
+
+  @@index([categoria_id], map: "categoria_id")
+  @@index([vendedor_id], map: "vendedor_id")
+}
+
+model usuarios {
+  id           Int    @id @default(autoincrement())
+  cliente_id   Int?
+  usuario_tipo Int?
+  nome         String
+  email        String @unique
+  telefone     String
+  password     String
+}
+
+model usuarios_tipos {
+  id   Int     @id @default(autoincrement()) @db.UnsignedInt
+  nome String? @db.VarChar(15)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model vendedores {
+  id            Int        @id @default(autoincrement()) @db.UnsignedInt
+  documento     String     @db.VarChar(20)
+  nome          String     @db.VarChar(155)
+  nome_fantasia String?    @db.VarChar(155)
+  telefone      String?    @db.VarChar(15)
+  email         String?    @db.VarChar(55)
+  endereco_id   Int?       @db.UnsignedInt
+  status        Int?
+  created_at    DateTime?  @db.Timestamp(0)
+  updated_at    DateTime?  @db.Timestamp(0)
+  pedidos       pedidos[]
+  produtos      produtos[]
+}
